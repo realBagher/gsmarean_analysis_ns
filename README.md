@@ -1,2 +1,2 @@
-# gsmarean_analysis_ns
+# gsmarena_analysis_ns
 Analysis and Warehousing of Data scrapped from GSM arena
