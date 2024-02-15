@@ -51,6 +51,21 @@ class Network(Base):
     )
 
 
+class Sensor(Base):
+    __tablename__ = 'sensors'
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        name="id",
+        autoincrement=True
+    )
+    name: Mapped[str] = mapped_column(
+        String(200),
+        name="name",
+        nullable=True
+    )
+
+
 class UnitOfMemory(Base):
     __tablename__ = 'unit_of_memories'
     id: Mapped[int] = mapped_column(
@@ -291,6 +306,26 @@ class DeviceTechnology(Base):
         Integer,
         ForeignKey('technologies.id', ondelete="CASCADE"),
         name="technology_id"
+    )
+
+
+class DeviceSensor(Base):
+    __tablename__ = "devices_sensors"
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        name="id",
+        auto_increment=True
+    )
+    device_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey('devices.id', ondelete="CASCADE"),
+        name="device_id"
+    )
+    sensor_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey('sensors.id', ondelete="CASCADE"),
+        name="sensor_id"
     )
 
 
