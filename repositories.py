@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import configparser
 
-from sqlalchemy import create_engine, insert, select
+from sqlalchemy import create_engine, insert, select, update
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import exists
 
@@ -13,7 +13,12 @@ from entities import (Brand as BrandEntity,
                       Sensor as SensorEntity,
                       DeviceSensor as DeviceSensorEntity,
                       Network as NetworkEntity,
-                      DeviceNetwork as DeviceNetworkEntity
+                      DeviceNetwork as DeviceNetworkEntity,
+                      OperationSystem as OperationSystemEntity,
+                      DeviceDimension as DeviceDimensionEntity,
+                      DeviceCamera as DeviceCameraEntity,
+                      DeviceMemory as DeviceMemoryEntity,
+UnitOfMemory as UnitOfMemoryMemoryEntity
                       )
 
 
@@ -156,6 +161,98 @@ class BrandRepository(BaseRepository):
                 session.execute(insert(BrandEntity).values({"name": name}))
             id = self.get_id_by_name(name)
         return id
+
+
+class OperationSystemRepository(BaseRepository):
+    def get_id_by_name(self, name: str) -> int | None:
+        engine = create_engine(self.connection_string)
+        with Session(engine) as session:
+            return session.scalars(select(OperationSystemEntity.id).where(OperationSystemEntity.name == name)).first()
+
+    def save(self, name: str) -> int:
+        id = self.get_id_by_name(name)
+        if id is None:
+            with Session(create_engine(self.connection_string)) as session:
+                session.execute(insert(OperationSystemEntity).values({"name": name}))
+            id = self.get_id_by_name(name)
+        return id
+
+
+class DeviceDimensionRepository(BaseRepository):
+    def get_id_by_device_id(self, device_id: int) -> int | None:
+        engine = create_engine(self.connection_string)
+        with Session(engine) as session:
+            return session.scalars(
+                select(DeviceDimensionEntity.id).where(DeviceDimensionEntity.device_id == device_id)).first()
+
+    def save(self, dimension: DeviceDimensionEntity) -> int:
+        id = self.get_id_by_device_id(dimension.device_id)
+        if id is None:
+            with Session(create_engine(self.connection_string)) as session:
+                session.execute(insert(DeviceDimensionEntity).values({
+                    "height": dimension.height,
+                    "width": dimension.width,
+                    "depth": dimension.depth,
+                    "device_id": dimension.device_id
+                }))
+            id = self.get_id_by_device_id(dimension.device_id)
+        else:
+            self.update(id, dimension)
+        return id
+
+    def update(self, id: int, dimension: DeviceDimensionEntity) -> int:
+        with Session(create_engine(self.connection_string)) as session:
+            session.execute(update(DeviceDimensionEntity).where(DeviceDimensionEntity.id == id).values(
+                {
+                    "height": dimension.height,
+                    "width": dimension.width,
+                    "depth": dimension.depth
+                }
+            ))
+        return id
+
+
+class DeviceCameraRepository(BaseRepository):
+    def save(self, camera: DeviceCameraEntity):
+        with Session(create_engine(self.connection_string)) as session:
+            session.execute(insert(DeviceCameraEntity).values({
+                "pixel": camera.pixel,
+                "position": camera.position,
+                "type": camera.type,
+                "device_id": camera.device_id
+            }))
+
+
+class DeviceMemoryRepository(BaseRepository):
+    def save(self, memory: DeviceMemoryEntity):
+        with Session(create_engine(self.connection_string)) as session:
+            session.execute(insert(DeviceMemoryEntity).values({
+                "memory_size": memory.memory_size,
+                "memory_unit_id": memory.memory_unit_id,
+                "ram_size": memory.ram_size,
+                "ram_unit_id": memory.ram_unit_id,
+                "device_id": memory.device_id
+            }))
+
+
+class UnitOfMemoryRepository(BaseRepository):
+    def get_id_by_name(self, name: str) -> int | None:
+        engine = create_engine(self.connection_string)
+        with Session(engine) as session:
+            return session.scalars(select(UnitOfMemoryMemoryEntity.id).where(UnitOfMemoryMemoryEntity.name == name)).first()
+
+    def save(self, memory: UnitOfMemoryMemoryEntity) -> int:
+        id = self.get_id_by_name(memory.name)
+        if id is None:
+            with Session(create_engine(self.connection_string)) as session:
+                session.execute(insert(OperationSystemEntity).values({
+                    "name": memory.name,
+                    "parent_id": memory.parent_id,
+                    "exchange": memory.exchange
+                }))
+            id = self.get_id_by_name(memory.name)
+        return id
+
 
 
 if __name__ == "__main__":
