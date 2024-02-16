@@ -1,9 +1,8 @@
 import datetime
 import enum
 
-from sqlalchemy import create_engine, update, insert, delete, ForeignKey, Enum, String, Integer, DECIMAL, BigInteger, Date
-from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
-from sqlalchemy.sql import exists
+from sqlalchemy import ForeignKey, Enum, String, Integer, DECIMAL, BigInteger, Date
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 class DeviceType(enum.Enum):
@@ -38,6 +37,21 @@ class Brand(Base):
 
 class Network(Base):
     __tablename__ = 'networks'
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        name="id",
+        autoincrement=True
+    )
+    name: Mapped[str] = mapped_column(
+        String(200),
+        name="name",
+        nullable=True
+    )
+
+
+class Sensor(Base):
+    __tablename__ = 'sensors'
     id: Mapped[int] = mapped_column(
         Integer,
         primary_key=True,
@@ -224,13 +238,13 @@ class DeviceDimension(Base):
     )
 
 
-class DevicesCamera(Base):
+class DeviceCamera(Base):
     __tablename__ = "devices_cameras"
     id: Mapped[int] = mapped_column(
         Integer,
         primary_key=True,
         name="id",
-        auto_increment=True
+        autoincrement=True
     )
     pixel: Mapped[DECIMAL] = mapped_column(
         DECIMAL,
@@ -260,7 +274,7 @@ class DeviceNetwork(Base):
         Integer,
         primary_key=True,
         name="id",
-        auto_increment=True
+        autoincrement=True
     )
     device_id: Mapped[int] = mapped_column(
         Integer,
@@ -280,7 +294,7 @@ class DeviceTechnology(Base):
         Integer,
         primary_key=True,
         name="id",
-        auto_increment=True
+        autoincrement=True
     )
     device_id: Mapped[int] = mapped_column(
         Integer,
@@ -294,8 +308,8 @@ class DeviceTechnology(Base):
     )
 
 
-class DeviceMemory(Base):
-    __tablename__ = ""
+class DeviceSensor(Base):
+    __tablename__ = "devices_sensors"
     id: Mapped[int] = mapped_column(
         Integer,
         primary_key=True,
@@ -305,27 +319,47 @@ class DeviceMemory(Base):
     device_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey('devices.id', ondelete="CASCADE"),
-        name="device_id",
-        nullable=True
+        name="device_id"
+    )
+    sensor_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey('sensors.id', ondelete="CASCADE"),
+        name="sensor_id"
+    )
+
+
+class DeviceMemory(Base):
+    __tablename__ = "devices_memories"
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        name="id",
+        autoincrement=True
+    )
+    device_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey('devices.id', ondelete="CASCADE"),
+        name="device_id"
     )
     memory_size: Mapped[DECIMAL] = mapped_column(
         DECIMAL,
         name="memory_size",
         nullable=True
-    ),
+    )
     memory_unit_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey('unit_of_memories.id', ondelete="CASCADE"),
-        name="memory_unit_id"
+        name="memory_unit_id",
+        nullable=True
     )
-    ram_size: Mapped[int] = mapped_column(
+    ram_size: Mapped[DECIMAL] = mapped_column(
         DECIMAL,
         name="ram_size",
         nullable=True
-    ),
-    ram_unit_id: Mapped[int] = mapped_column(
-        BigInteger,
-        ForeignKey('unit_of_memories.id', ondelete="CASCADE"),
-        name="ram_unit_id"
     )
-
+    ram_unit_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey('unit_of_memories.id', ondelete="CASCADE"),
+        name="ram_unit_id",
+        nullable=True
+    )
